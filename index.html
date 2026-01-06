@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSAP Scrollytelling | Space Trip</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        body {
+            overflow-x: hidden;
+            margin: 0;
+            background-color: #87CEEB; /* Начало: Голубое небо */
+        }
+
+        /* Ракета, которая будет лететь */
+        #rocket-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            font-size: 80px;
+            pointer-events: none;
+            filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.5));
+        }
+
+        /* Планеты (рисуем через CSS) */
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .moon {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at 30% 30%, #f5f5f5, #8c8c8c);
+            box-shadow: 0 0 50px rgba(255,255,255,0.2);
+            right: 10%;
+            top: 50%;
+        }
+
+        .mars {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #8b0000);
+            box-shadow: 0 0 60px rgba(255, 69, 0, 0.4);
+            left: 10%;
+            top: 50%;
+        }
+
+        /* Звезды */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0; /* Скрыты в начале */
+        }
+
+        /* Секции (Этапы полета) */
+        .section {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 50;
+        }
+        
+        p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin: 20px auto;
+            z-index: 50;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="rocket-container">🚀</div>
+
+    <div id="stars-container" class="fixed inset-0 pointer-events-none"></div>
+
+    <section class="section" id="stage-1">
+        <div class="content">
+            <h1 class="text-slate-900">ПОЕХАЛИ!</h1>
+            <p class="text-slate-800">Скролль вниз, чтобы начать миссию.</p>
+        </div>
+    </section>
+
+    <section class="section" id="stage-2">
+        <div class="content opacity-0 translate-y-20">
+            <h1>ВЫХОД НА ОРБИТУ</h1>
+            <p>Атмосфера пройдена. Температура падает. Включаем двигатели.</p>
+        </div>
+    </section>
+
+    <section class="section" id="stage-3">
+        <div class="planet moon opacity-0 translate-x-full"></div> <div class="content opacity-0">
+            <h1>ЛУНА</h1>
+            <p>Наш первый спутник. 384 400 км от дома.</p>
+        </div>
+    </section>
+
+    <section class="section" id="stage-4">
+        <div class="planet mars opacity-0 -translate-x-full"></div> <div class="content opacity-0">
+            <h1>МАРС</h1>
+            <p>Красная планета. Цель нашей миссии.</p>
+        </div>
+    </section>
+
+    <section class="section" id="stage-5">
+        <div class="content opacity-0 scale-50">
+            <h1 class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">MISSION COMPLETE</h1>
+            <p>Вы великолепный пилот.</p>
+            <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="inline-block mt-8 border border-white px-8 py-3 rounded-full hover:bg-white hover:text-black transition cursor-pointer pointer-events-auto">Вернуться на Землю</a>
+        </div>
+    </section>
+
+    <script>
+        // 1. Создаем звезды
+        const starsContainer = document.getElementById('stars-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            // Случайный размер и позиция
+            const size = Math.random() * 3 + 'px';
+            star.style.width = size;
+            star.style.height = size;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            starsContainer.appendChild(star);
+        }
+
+        // 2. Регистрируем плагин
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- АНИМАЦИЯ 1: Цвет неба (от голубого к черному) ---
+        gsap.to("body", {
+            backgroundColor: "#000000",
+            scrollTrigger: {
+                trigger: "#stage-2",
+                start: "top center",
+                end: "bottom center",
+                scrub: true // Плавная привязка к скроллу
+            }
+        });
+
+        // --- АНИМАЦИЯ 2: Появление звезд ---
+        gsap.to(".star", {
+            opacity: 1,
+            scrollTrigger: {
+                trigger: "#stage-2",
+                start: "top center",
+                end: "center center",
+                scrub: true
+            }
+        });
+
+        // --- АНИМАЦИЯ 3: Поведение Ракеты ---
+        // Сначала она смотрит вверх
+        gsap.to("#rocket-container", {
+            scale: 2, // Ракета увеличивается
+            rotation: 45, // Немного наклоняется
+            scrollTrigger: {
+                trigger: "#stage-2",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1
+            }
+        });
+
+        // --- СЦЕНАРИИ ПОЯВЛЕНИЯ ТЕКСТА И ПЛАНЕТ ---
+
+        // Этап 2 (Выход в космос) - Текст выплывает
+        gsap.to("#stage-2 .content", {
+            opacity: 1,
+            y: 0,
+            scrollTrigger: {
+                trigger: "#stage-2",
+                start: "top center",
+                end: "center center",
+                scrub: 1
+            }
+        });
+
+        // Этап 3 (Луна)
+        // Луна выезжает справа
+        gsap.to(".moon", {
+            x: 0, // Возвращаем на место
+            opacity: 1,
+            scrollTrigger: {
+                trigger: "#stage-3",
+                start: "top bottom",
+                end: "center center",
+                scrub: 1
+            }
+        });
+        // Текст Луны
+        gsap.to("#stage-3 .content", {
+            opacity: 1,
+            scrollTrigger: {
+                trigger: "#stage-3",
+                start: "top center",
+                end: "center center",
+                scrub: 1
+            }
+        });
+
+        // Этап 4 (Марс)
+        // Ракета поворачивается к Марсу
+        gsap.to("#rocket-container", {
+            rotation: -45, 
+            scrollTrigger: {
+                trigger: "#stage-4",
+                start: "top bottom",
+                end: "center center",
+                scrub: 1
+            }
+        });
+        // Марс выезжает слева
+        gsap.to(".mars", {
+            x: 0, 
+            opacity: 1,
+            scrollTrigger: {
+                trigger: "#stage-4",
+                start: "top bottom",
+                end: "center center",
+                scrub: 1
+            }
+        });
+        gsap.to("#stage-4 .content", { opacity: 1, scrollTrigger: { trigger: "#stage-4", start: "top center", scrub: 1 } });
+
+        // Этап 5 (Варп-финал)
+        // Ракета улетает вверх и исчезает
+        gsap.to("#rocket-container", {
+            y: -1000,
+            scale: 0.1,
+            duration: 5,
+            scrollTrigger: {
+                trigger: "#stage-5",
+                start: "top center",
+                end: "bottom bottom",
+                scrub: 1
+            }
+        });
+        // Финальный текст
+        gsap.to("#stage-5 .content", {
+            opacity: 1,
+            scale: 1,
+            scrollTrigger: {
+                trigger: "#stage-5",
+                start: "center bottom",
+                end: "center center",
+                scrub: 1
+            }
+        });
+
+    </script>
+</body>
+</html>
